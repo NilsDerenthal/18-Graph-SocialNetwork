@@ -16,7 +16,7 @@ package model;
  * @author Qualitaets- und UnterstuetzungsAgentur - Landesinstitut fuer Schule
  * @version Oktober 2015
  */
-public class Vertex{
+public class Vertex {
   //Einmalige ID des Knotens und Markierung
   private String id;
   private boolean mark;

@@ -17,7 +17,7 @@ package model;
  * @author Qualitaets- und UnterstuetzungsAgentur - Landesinstitut fuer Schule
  * @version Oktober 2015
  */
-public class Edge{
+public class Edge {
   private Vertex[] vertices;
   private double weight;
   private boolean mark;

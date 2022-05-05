@@ -5,6 +5,10 @@ import model.Graph;
 import model.List;
 import model.Vertex;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 /**
  * Created by Jean-Pierre on 12.01.2017.
  */
@@ -38,7 +42,10 @@ public class MainController {
      * @return true, falls ein neuer Nutzer hinzugefügt wurde, sonst false.
      */
     public boolean insertUser(String name){
-        //TODO 05: Nutzer dem sozialen Netzwerk hinzufügen.
+        if (allUsers.getVertex(name) == null) {
+            allUsers.addVertex(new Vertex(name));
+            return true;
+        }
         return false;
     }
 
@@ -48,7 +55,13 @@ public class MainController {
      * @return true, falls ein Nutzer gelöscht wurde, sonst false.
      */
     public boolean deleteUser(String name){
-        //TODO 07: Nutzer aus dem sozialen Netzwerk entfernen.
+        var user = allUsers.getVertex(name);
+        if (user != null) {
+            var edges = allUsers.getEdges(user);
+            forEach(edges, (i, v) -> allUsers.removeEdge(v));
+            allUsers.removeVertex(user);
+            return true;
+        }
         return false;
     }
 
@@ -57,8 +70,22 @@ public class MainController {
      * @return
      */
     public String[] getAllUsers(){
-        //TODO 06: String-Array mit allen Nutzernamen erstellen.
-        return null;
+        var users = allUsers.getVertices();
+
+        AtomicInteger n = new AtomicInteger();
+        forEach(users, (ignored1, ignored2) -> n.incrementAndGet());
+
+        String[] userArray = new String[n.get()];
+        forEach(users, (i, v) -> userArray[i] = v.getID());
+        return userArray;
+    }
+
+    private <T> void forEach (List<T> src, BiConsumer<Integer, ? super T> action) {
+        int i = 0;
+        src.toFirst();
+        while (src.hasAccess()) {
+            action.accept(i++, src.getContent());
+        }
     }
 
     /**
