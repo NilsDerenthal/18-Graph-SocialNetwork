@@ -28,18 +28,29 @@ public class MainProgram {
 
         // Berechne Mitte des Bildschirms
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+        System.out.println("e");
+
         int width = gd.getDisplayMode().getWidth();
         int height = gd.getDisplayMode().getHeight();
         int x = width / 2;
         int y = height / 2;
 
+
         // Berechne die beste obere linke Ecke für das Fenster so, dass es genau mittig erscheint
         x = x - windowWidth / 2;
         y = y - windowHeight / 2;
 
+        System.out.println("o");
+
         // Erzeuge ein neues Fenster
         MainFrame mainFrame = new MainFrame(mainController, programTitle, x, y, windowWidth, windowHeight);
+
+        System.out.println("z");
+
         mainFrame.setResizable(true);
+
+        System.out.println("ä");
     }
 
 }

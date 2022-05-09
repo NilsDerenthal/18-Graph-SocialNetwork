@@ -1,6 +1,7 @@
 package view;
 
 import control.MainController;
+import jdk.swing.interop.SwingInterOpUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -30,9 +31,14 @@ public class InteractionPanelHandler {
     private MainController mainController;
 
     public InteractionPanelHandler(MainController mainController) {
+        System.out.println("safs");
         this.mainController = mainController;
+        System.out.println("GGG");
         createButtons();
+        System.out.println("butons");
         update();
+        System.out.println("update");
+        System.out.println("wqewsr");
     }
 
     private void createButtons(){
@@ -140,15 +146,18 @@ public class InteractionPanelHandler {
         DecimalFormat df = new DecimalFormat("#.##",otherSymbols);
         df.setRoundingMode(RoundingMode.HALF_UP);
 
+        System.out.println("q");
         String[] allUsers = mainController.getAllUsers();
+        System.out.println("w");
         if(allUsers != null){
             for(int i = 0; i < allUsers.length; i++){
+                System.out.println("e8teiut8uerwuidsiusdfisdfuiusfdiufudsidhgfuid+");
                 String[] friendsOfUser = mainController.getAllFriendsFromUser(allUsers[i]);
                 int amount = 0;
                 String allFriends = "";
                 if(friendsOfUser != null){
                     amount = friendsOfUser.length;
-
+                    System.out.println("23493209");
                     for(int j = 0; j < amount; j++){
                         if(j != amount - 1){
                             allFriends = allFriends + friendsOfUser[j] + ", ";
@@ -158,6 +167,7 @@ public class InteractionPanelHandler {
 
                     }
                 }
+                System.out.println("dsadsaddsdsadsdsadasdsaddasdsad");
                 double cd = Double.parseDouble(df.format(mainController.centralityDegreeOfUser(allUsers[i])));
 
                 addToOutput(amount, cd, allUsers[i], allFriends);

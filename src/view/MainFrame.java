@@ -27,6 +27,8 @@ public class MainFrame extends JFrame {
 
         this.interactionPanel = new InteractionPanelHandler(mainController).getPanel();
 
+        System.out.println("wwwww");
+
         this.setContentPane(interactionPanel);
 
         this.setLocation(x,y);

@@ -57,6 +57,7 @@ public class Graph {
 		List<T> newL = new List<>();
 		while (src.hasAccess()) {
 			newL.append(src.getContent());
+			src.next();
 		}
 		return newL;
 	}
@@ -71,6 +72,7 @@ public class Graph {
 			if (vertices.getContent().getID().equals(pID)) {
 				return vertices.getContent();
 			}
+			vertices.next();
 		}
 		return null;
 	}

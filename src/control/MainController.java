@@ -5,9 +5,12 @@ import model.Graph;
 import model.List;
 import model.Vertex;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 /**
  * Created by Jean-Pierre on 12.01.2017.
@@ -32,8 +35,10 @@ public class MainController {
         insertUser("Silent Bob");
         insertUser("Dörte");
         insertUser("Ralle");
+        System.out.println("befriending");
         befriend("Silent Bob", "Ralle");
         befriend("Dörte", "Ralle");
+        System.out.println("done");
     }
 
     /**
@@ -58,7 +63,13 @@ public class MainController {
         var user = allUsers.getVertex(name);
         if (user != null) {
             var edges = allUsers.getEdges(user);
-            forEach(edges, (i, v) -> allUsers.removeEdge(v));
+
+            edges.toFirst();
+            while (edges.hasAccess()) {
+                allUsers.removeEdge(edges.getContent());
+                edges.next();
+            }
+
             allUsers.removeVertex(user);
             return true;
         }
@@ -70,22 +81,30 @@ public class MainController {
      * @return
      */
     public String[] getAllUsers(){
+        System.out.println("qi");
         var users = allUsers.getVertices();
-
-        AtomicInteger n = new AtomicInteger();
-        forEach(users, (ignored1, ignored2) -> n.incrementAndGet());
-
-        String[] userArray = new String[n.get()];
-        forEach(users, (i, v) -> userArray[i] = v.getID());
-        return userArray;
+        System.out.println("qppppp");
+        return toArray(users, String[]::new, Vertex::getID);
     }
 
-    private <T> void forEach (List<T> src, BiConsumer<Integer, ? super T> action) {
+
+    private <T, V> V[] toArray (List<T> src, IntFunction<V[]> generator, Function<T, V> mapper) {
         int i = 0;
         src.toFirst();
         while (src.hasAccess()) {
-            action.accept(i++, src.getContent());
+            src.next();
+            i++;
         }
+
+        int index = 0;
+        var arr = generator.apply(i);
+        src.toFirst();
+        while (src.hasAccess()) {
+            arr[index] = mapper.apply(src.getContent());
+            src.next();
+            index++;
+        }
+        return arr;
     }
 
     /**
@@ -94,8 +113,10 @@ public class MainController {
      * @return
      */
     public String[] getAllFriendsFromUser(String name){
-        //TODO 09: Freundesliste eines Nutzers als String-Array erstellen.
-        return null;
+        var friends = allUsers.getNeighbours(allUsers.getVertex(name));
+        return Optional.ofNullable(friends)
+                       .map(f -> toArray(f, String[]::new, Vertex::getID))
+                       .orElse(null);
     }
 
     /**
@@ -106,8 +127,10 @@ public class MainController {
      * @return
      */
     public double centralityDegreeOfUser(String name){
-        //TODO 10: Prozentsatz der vorhandenen Freundschaften eines Nutzers von allen möglichen Freundschaften des Nutzers.
-        return 0.125456;
+        return Optional.ofNullable(getAllFriendsFromUser(name))
+            .map(arr -> arr.length)
+            .map(friends -> friends / toArray(allUsers.getVertices(), Vertex[]::new, Function.identity()).length)
+            .orElse(-1);
     }
 
     /**
@@ -117,7 +140,14 @@ public class MainController {
      * @return true, falls eine neue Freundeschaft entstanden ist, ansonsten false.
      */
     public boolean befriend(String name01, String name02){
-        //TODO 08: Freundschaften schließen.
+
+        var f1 = allUsers.getVertex(name01);
+        var f2 = allUsers.getVertex(name02);
+
+        if ((f1 != null && f2 != null) && allUsers.getEdge(f1, f2) == null) {
+            allUsers.addEdge(new Edge(f1, f2, 0));
+            return true;
+        }
         return false;
     }
 
@@ -128,7 +158,12 @@ public class MainController {
      * @return true, falls ihre Freundschaft beendet wurde, ansonsten false.
      */
     public boolean unfriend(String name01, String name02){
-        //TODO 11: Freundschaften beenden.
+        var f1 = allUsers.getVertex(name01);
+        var f2 = allUsers.getVertex(name02);
+        if ((f1 != null && f2 != null) && allUsers.getEdge(f1, f2) != null) {
+            allUsers.removeEdge(allUsers.getEdge(f1, f2));
+            return true;
+        }
         return false;
     }
 
@@ -138,8 +173,9 @@ public class MainController {
      * @return
      */
     public double dense(){
-        //TODO 12: Dichte berechnen.
-        return 0.12334455676;
+        double edges = toArray(allUsers.getEdges(), Edge[]::new, Function.identity()).length;
+        double vertices = toArray(allUsers.getVertices(), Vertex[]::new, Function.identity()).length;
+        return edges / ((vertices * (vertices + 1)) / 2);
     }
 
     /**
