@@ -6,9 +6,6 @@ import model.List;
 import model.Vertex;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
@@ -185,12 +182,50 @@ public class MainController {
      * @param name02
      * @return
      */
-    public String[] getLinksBetween(String name01, String name02){
+    public String[] getLinksBetween(String name01, String name02) {
+        allUsers.setAllVertexMarks(false);
+        return toArray(getLinksBetweenRec(name01, name02), String[]::new, Function.identity());
+    }
+
+    private List<String> getLinksBetweenRec (String name01, String name02) {
+
         Vertex user01 = allUsers.getVertex(name01);
         Vertex user02 = allUsers.getVertex(name02);
-        if(user01 != null && user02 != null){
-            //TODO 13: Schreibe einen Algorithmus, der mindestens eine Verbindung von einem Nutzer über Zwischennutzer zu einem anderem Nutzer bestimmt. Happy Kopfzerbrechen!
+
+        if (user01 != null && user02 != null) {
+
+            var l = new List<String>();
+            l.append(name01);
+
+            // at the end
+            if (user01 == user02) {
+                return l;
+            }
+
+            // recursively search for all neighbours
+            var nb = allUsers.getNeighbours(user01);
+            nb.toFirst();
+            while (nb.hasAccess()) {
+
+                // if we haven't been there
+                if (!nb.getContent().isMarked()) {
+                    nb.getContent().setMark(true);
+                    var rec = getLinksBetweenRec(nb.getContent().getID(), name02);
+
+                    // if the recursive call returned a result
+                    if (rec != null) {
+                        l.concat(rec);
+                        return l;
+                    }
+                }
+                nb.next();
+            }
+
+            // no result
+            return null;
         }
+
+        // faulty input
         return null;
     }
 
@@ -199,7 +234,14 @@ public class MainController {
      * @return true, falls ohne einsame Knoten, sonst false.
      */
     public boolean someoneIsLonely(){
-        //TODO 14: Schreibe einen Algorithmus, der explizit den von uns benutzten Aufbau der Datenstruktur Graph und ihre angebotenen Methoden so ausnutzt, dass schnell (!) iterativ geprüft werden kann, ob der Graph allUsers keine einsamen Knoten hat. Dies lässt sich mit einer einzigen Schleife prüfen.
+        var all = allUsers.getVertices();
+        all.toFirst();
+        while (all.hasAccess()) {
+            if (allUsers.getNeighbours(all.getContent()).isEmpty()) {
+                return true;
+            }
+            all.next();
+        }
         return false;
     }
 
@@ -208,11 +250,26 @@ public class MainController {
      * Nach der Prüfung werden noch vor der Rückgabe alle Knoten demarkiert.
      * @return true, falls alle Knoten vom ersten ausgehend markiert wurden, sonst false.
      */
-    public boolean testIfConnected(){
-        //TODO 15: Schreibe einen Algorithmus, der ausgehend vom ersten Knoten in der Liste aller Knoten versucht, alle anderen Knoten über Kanten zu erreichen und zu markieren.
-        return false;
+    public boolean markConnections (){
+        allUsers.setAllVertexMarks(false);
+        var users = allUsers.getVertices();
+        users.toFirst();
+        markConnections(users.getContent());
+        return allUsers.allVerticesMarked();
     }
-    
+
+    private void markConnections (Vertex p) {
+        p.setMark(true);
+        var nb = allUsers.getNeighbours(p);
+        nb.toFirst();
+        while (nb.hasAccess()) {
+            if (!nb.getContent().isMarked()) {
+                markConnections(p);
+            }
+            nb.next();
+        }
+    }
+
     /**
      * Gibt einen String-Array zu allen Knoten zurück, die von einem Knoten ausgehend erreichbar sind, falls die Person vorhanden ist.
      * Im Anschluss werden vor der Rückgabe alle Knoten demarkiert.
